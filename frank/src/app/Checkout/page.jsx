@@ -1,11 +1,16 @@
 "use client"
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
+import { useRazorpay } from 'react-razorpay';
 import { useSelector } from 'react-redux';
+// import { useRazorpay, RazorpayOrderOptions } from "react-razorpay";
+// import Razorpay from 'react-razorpay/dist/razorpay';
+// import  useRazorpay  from 'react-razorpay';
+
 
 const OrderSummary = () => {
 
-
+  const { Razorpay } = useRazorpay();
   let [paymenttype,setPaymentType]=useState(1)
 
   let [shipdata,setShipdata]=useState({
@@ -56,7 +61,47 @@ const OrderSummary = () => {
 
     axios.post("http://localhost:8000/website/order/order-save",finaldata)
     .then((res)=>{
-      console.log(res.data)
+      if(res.data.payment_type==1){
+          //Redirect Thank You Page
+      }
+      if(res.data.payment_type==2){
+        const options={
+          key: "rzp_test_0gYcjwTJCUgngj",
+          amount: res.data.order.amount, // Amount in paise
+          currency: "INR",
+          name: "WS",
+          description: "WS Provide Product",
+          order_id: res.data.order.id, // Generate order_id on server
+          handler: (response) => {
+            console.log(response)
+           axios.post("http://localhost:8000/website/order/payment-verification",
+                    {razorpay_order_id:res.data.order.id,razorpay_response:response}
+                ).then(
+                    (success) => {
+
+                      alert("Payment Successful!");
+                    }
+                ).catch(
+                    (error) => {
+                        notify("Client error", "error");
+                    }
+               )
+           
+            
+          },
+          prefill: {
+            name: "John Doe",
+            email: "john.doe@example.com",
+            contact: "9999999999",
+          },
+          theme: {
+            color: "#F37254",
+          },
+        };
+        const razorpayInstance = new Razorpay(options);
+       razorpayInstance.open();
+       
+      }
     })
 
   }

@@ -20,7 +20,7 @@ const orderSchema = new Schema({
     },
     payment_status:{
         type: Number,
-        enum: [0,1,2],
+        enum: [0,1,2],  //1 Pendding
         default: 0
     },
     order_status: {
